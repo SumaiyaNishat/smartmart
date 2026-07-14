@@ -1,0 +1,54 @@
+@import "tailwindcss";
+@import "@heroui/styles";
+@plugin "daisyui";
+
+:root {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), var(--font-hind-siliguri), sans-serif;
+  
+  --color-primary: #2563EB;
+  --color-secondary: #0F172A;
+  --color-accent: #F97316;
+  --color-bg-light: #F8FAFC;
+  --color-card: #FFFFFF;
+  
+  --animate-float: float 4s ease-in-out infinite;
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+}
+
+/* Background gradients and blobs based on the premium style guide */
+.bg-soft-gradient {
+  background: radial-gradient(circle at 10% 10%, rgba(37, 99, 235, 0.03) 0%, transparent 40%),
+              radial-gradient(circle at 90% 10%, rgba(249, 115, 22, 0.04) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(248, 250, 252, 1) 0%, #F1F5F9 100%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 10px 40px 0 rgba(15, 23, 42, 0.05);
+}
+
+.hero-circle-bg {
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.02) 100%);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+
