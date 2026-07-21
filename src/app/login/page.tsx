@@ -18,17 +18,23 @@ const loginSchema = z.object({
 
 type LoginInput = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginContent() {
   const { login, user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [submitting, setSubmitting] = React.useState(false);
 
-  const redirectUrl = searchParams.get("redirect") || "/dashboard";
+  const redirectUrl = searchParams.get("redirect") || "/";
 
   React.useEffect(() => {
     if (!loading && user) {
-      router.push(redirectUrl);
+      if (user.role === "admin") {
+        const target = (redirectUrl.startsWith("/admin") || redirectUrl.startsWith("/dashboard")) ? redirectUrl : "/dashboard";
+        router.push(target);
+      } else {
+        const target = (redirectUrl.startsWith("/admin") || redirectUrl.startsWith("/dashboard")) ? "/" : redirectUrl;
+        router.push(target);
+      }
     }
   }, [user, loading, router, redirectUrl]);
 
@@ -100,7 +106,7 @@ export default function LoginPage() {
             </div>
 
             <Button
-              variant="primary"
+              variant="secondary"
               type="submit"
               disabled={submitting}
               className="w-full py-4 text-center justify-center font-bold text-sm uppercase cursor-pointer"
@@ -120,5 +126,21 @@ export default function LoginPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="flex flex-col min-h-screen bg-bg-light">
+        <Header />
+        <div className="container mx-auto px-6 py-20 flex-grow flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        </div>
+        <Footer />
+      </div>
+    }>
+      <LoginContent />
+    </React.Suspense>
   );
 }

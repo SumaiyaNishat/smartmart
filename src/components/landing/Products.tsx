@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/SafeImage";
 import Link from "next/link";
 import axios from "axios";
 import { useCart, IProduct } from "@/context/CartContext";
@@ -20,26 +21,26 @@ export const Products: React.FC = () => {
   // Sample mock products database fallback to ensure zero placeholder code and full functionality
   const mockProducts: IProduct[] = [
     {
-      _id: "mock-prod-1",
-      name: "Wireless ANC Headphones Max",
+      _id: "65c1f0f29c426639bca0b001",
+      name: "প্লাগ ইন কুরাআন",
       description: "Experience premium sound quality with active hybrid noise cancelling engineering.",
       price: 4990,
       images: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBG72ByqQqFaNO-0JN9q3JrwnT6ekzSNDm8OHx-o9zMU3b3jzE288O66SLff4ltW3RdE77_yHRs_cQFLDbnJmToGAyYpKmqM5-Ut4_sjc1hC6MIzdj8zpBfqEVwqpO6nREgKh9FIN2L7c0JWnYOCzwuWrqeUkey7KRgWZb6QmVhEsbUEzivzb18gnoWKCaCwUNm4fXaFZgjPFGE0gqhf0B4jh53Q6VB1HY2K-rgsSdBlw-UzPPvOJ72B9_9KBbJLdRFBQ",
+        "https://res.cloudinary.com/dv0ayrve0/image/upload/v1784617606/066f9458-7f79-4470-8b93-26c83d58d9ec_jebfam.jpg"
       ],
-      category: "Accessories",
+      category: "Electronics",
       stock: 12,
       discount: 10,
       featured: true,
       rating: 4.8,
     },
     {
-      _id: "mock-prod-2",
-      name: "Aura Smart Watch Pro",
+      _id: "65c1f0f29c426639bca0b002",
+      name: "Turbo Fan",
       description: "Track your health metrics, dynamic workouts, heart rate, and sleep analytics.",
       price: 3490,
       images: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBG72ByqQqFaNO-0JN9q3JrwnT6ekzSNDm8OHx-o9zMU3b3jzE288O66SLff4ltW3RdE77_yHRs_cQFLDbnJmToGAyYpKmqM5-Ut4_sjc1hC6MIzdj8zpBfqEVwqpO6nREgKh9FIN2L7c0JWnYOCzwuWrqeUkey7KRgWZb6QmVhEsbUEzivzb18gnoWKCaCwUNm4fXaFZgjPFGE0gqhf0B4jh53Q6VB1HY2K-rgsSdBlw-UzPPvOJ72B9_9KBbJLdRFBQ",
+        "https://res.cloudinary.com/dv0ayrve0/image/upload/v1784626040/3f2b4b89-c533-4f89-9e36-414eddf5d070_uuloyy.jpg",
       ],
       category: "Gadgets",
       stock: 8,
@@ -48,12 +49,12 @@ export const Products: React.FC = () => {
       rating: 4.6,
     },
     {
-      _id: "mock-prod-3",
+      _id: "65c1f0f29c426639bca0b003",
       name: "UltraThin Developer Laptop 15",
       description: "Supercharged M-series processors with 16GB RAM for optimal coding throughput.",
       price: 89000,
       images: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBG72ByqQqFaNO-0JN9q3JrwnT6ekzSNDm8OHx-o9zMU3b3jzE288O66SLff4ltW3RdE77_yHRs_cQFLDbnJmToGAyYpKmqM5-Ut4_sjc1hC6MIzdj8zpBfqEVwqpO6nREgKh9FIN2L7c0JWnYOCzwuWrqeUkey7KRgWZb6QmVhEsbUEzivzb18gnoWKCaCwUNm4fXaFZgjPFGE0gqhf0B4jh53Q6VB1HY2K-rgsSdBlw-UzPPvOJ72B9_9KBbJLdRFBQ",
+        "/placeholder.png",
       ],
       category: "Electronics",
       stock: 4,
@@ -62,12 +63,12 @@ export const Products: React.FC = () => {
       rating: 4.9,
     },
     {
-      _id: "mock-prod-4",
+      _id: "65c1f0f29c426639bca0b004",
       name: "Smart Speaker Voice Hub",
       description: "Intelligent speaker with premium acoustic output and integrated smart home control.",
       price: 2490,
       images: [
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBG72ByqQqFaNO-0JN9q3JrwnT6ekzSNDm8OHx-o9zMU3b3jzE288O66SLff4ltW3RdE77_yHRs_cQFLDbnJmToGAyYpKmqM5-Ut4_sjc1hC6MIzdj8zpBfqEVwqpO6nREgKh9FIN2L7c0JWnYOCzwuWrqeUkey7KRgWZb6QmVhEsbUEzivzb18gnoWKCaCwUNm4fXaFZgjPFGE0gqhf0B4jh53Q6VB1HY2K-rgsSdBlw-UzPPvOJ72B9_9KBbJLdRFBQ",
+        "/placeholder.png",
       ],
       category: "Smart Home",
       stock: 0, // Out of stock to test disabled buy now / add to cart buttons
@@ -90,6 +91,7 @@ export const Products: React.FC = () => {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {
@@ -142,11 +144,10 @@ export const Products: React.FC = () => {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 cursor-pointer ${
-                selectedCategory === cat
-                  ? "bg-primary text-white shadow-md shadow-primary/20"
-                  : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-secondary dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
-              }`}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition duration-200 cursor-pointer ${selectedCategory === cat
+                ? "bg-primary text-white shadow-md shadow-primary/20"
+                : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-secondary dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+                }`}
             >
               {cat}
             </button>
@@ -178,7 +179,7 @@ export const Products: React.FC = () => {
       ) : (
         // Products Grid
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => {
+          {filteredProducts.map((product, idx) => {
             const hasDiscount = product.discount > 0;
             const discountedPrice = hasDiscount
               ? product.price * (1 - product.discount / 100)
@@ -228,11 +229,12 @@ export const Products: React.FC = () => {
 
                 {/* Image Container */}
                 <div className="relative w-full h-48 rounded-2xl bg-slate-50 dark:bg-slate-900 overflow-hidden mb-4 flex items-center justify-center">
-                  <Image
+                  <SafeImage
                     alt={product.name}
                     src={product.images[0]}
                     fill
                     sizes="(max-w-768px) 100vw, 25vw"
+                    priority={idx < 4}
                     className="object-contain p-4 group-hover:scale-105 transition duration-300"
                   />
                 </div>
@@ -258,9 +260,8 @@ export const Products: React.FC = () => {
                       {[...Array(5)].map((_, i) => (
                         <svg
                           key={i}
-                          className={`w-3 h-3 ${
-                            i < Math.floor(product.rating) ? "fill-current" : "fill-none"
-                          }`}
+                          className={`w-3 h-3 ${i < Math.floor(product.rating) ? "fill-current" : "fill-none"
+                            }`}
                           stroke="currentColor"
                           viewBox="0 0 20 20"
                         >
@@ -299,11 +300,10 @@ export const Products: React.FC = () => {
                     </button>
                     <Link
                       href={inStock ? `/products/${product._id}?buy=true` : "#"}
-                      className={`px-3 py-2 text-center text-xs font-bold rounded-xl transition ${
-                        inStock
-                          ? "bg-primary text-white hover:scale-102 cursor-pointer shadow-sm shadow-primary/20"
-                          : "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed opacity-50"
-                      }`}
+                      className={`px-3 py-2 text-center text-xs font-bold rounded-xl transition ${inStock
+                        ? "bg-primary text-white hover:scale-102 cursor-pointer shadow-sm shadow-primary/20"
+                        : "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed opacity-50"
+                        }`}
                     >
                       {t("buyNow")}
                     </Link>

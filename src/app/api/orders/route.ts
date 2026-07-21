@@ -11,31 +11,50 @@ export async function POST(req: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized. Please log in." }, { status: 401 });
-    }
+    let userId: string | null = null;
+    let isGuest = true;
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid session. Please log in again." }, { status: 401 });
+    if (token) {
+      try {
+        const decoded = verifyToken(token);
+        if (decoded && decoded.userId) {
+          userId = decoded.userId;
+          isGuest = false;
+        }
+      } catch {
+        userId = null;
+        isGuest = true;
+      }
     }
 
     const body = await req.json();
-    const { customerName, phone, address, thana, district, productId, quantity, totalPrice } = body;
+    const {
+      customerName,
+      phone,
+      optionalPhone,
+      address,
+      thana,
+      district,
+      orderNote,
+      productId,
+      quantity,
+      deliveryCharge,
+      totalPrice,
+    } = body;
 
-    if (!customerName || !phone || !address || !thana || !district || !productId || !quantity || !totalPrice) {
-      return NextResponse.json({ error: "Missing required order fields." }, { status: 400 });
+    if (!customerName || !phone || !address || !thana || !district || !productId || !quantity || totalPrice === undefined) {
+      return NextResponse.json({ error: "সকল প্রয়োজনীয় তথ্য পূরণ করুন।" }, { status: 400 });
     }
 
     // Verify stock availability
     const product = await Product.findById(productId);
     if (!product) {
-      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+      return NextResponse.json({ error: "পণ্যটি খুঁজে পাওয়া যায়নি।" }, { status: 404 });
     }
 
     if (product.stock < quantity) {
       return NextResponse.json(
-        { error: `Insufficient stock. Only ${product.stock} items left.` },
+        { error: `স্টক অপর্যাপ্ত। শুধুমাত্র ${product.stock} টি পণ্য আছে।` },
         { status: 400 }
       );
     }
@@ -46,26 +65,29 @@ export async function POST(req: NextRequest) {
 
     // Create Order
     const newOrder = await Order.create({
-      user: decoded.userId,
+      user: userId,
+      isGuest,
       customerName,
       phone,
+      optionalPhone: optionalPhone || "",
       address,
       thana,
       district,
+      orderNote: orderNote || "",
       product: productId,
       quantity,
-      deliveryCharge: 0,
+      deliveryCharge: deliveryCharge || 0,
       totalPrice,
       deliveryStatus: "pending",
     });
 
     return NextResponse.json(
-      { message: "Order placed successfully.", order: newOrder },
+      { message: "অর্ডার সফলভাবে সম্পন্ন হয়েছে।", order: newOrder },
       { status: 201 }
     );
   } catch (error: unknown) {
     console.error("Order POST Error:", error);
-    return NextResponse.json({ error: "An internal server error occurred." }, { status: 500 });
+    return NextResponse.json({ error: "সার্ভারে সমস্যা হয়েছে। আবার চেষ্টা করুন।" }, { status: 500 });
   }
 }
 

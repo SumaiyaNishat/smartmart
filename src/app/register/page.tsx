@@ -14,8 +14,12 @@ import { Button } from "@/components/ui/Button";
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
   phone: z.string().min(11, "Phone number must be at least 11 digits").max(14, "Phone number too long"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Confirm password must be at least 6 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 type RegisterInput = z.infer<typeof registerSchema>;
@@ -27,7 +31,11 @@ export default function RegisterPage() {
 
   React.useEffect(() => {
     if (!loading && user) {
-      router.push("/dashboard");
+      if (user.role === "admin") {
+        router.push("/dashboard");
+      } else {
+        router.push("/");
+      }
     }
   }, [user, loading, router]);
 
@@ -44,7 +52,7 @@ export default function RegisterPage() {
     const success = await registerUser(data.name, data.email, data.password, data.phone);
     setSubmitting(false);
     if (success) {
-      router.push("/dashboard");
+      router.push("/login");
     }
   };
 
@@ -126,8 +134,22 @@ export default function RegisterPage() {
               )}
             </div>
 
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-xs font-bold text-slate-400 mb-1.5 uppercase">Confirm Password</label>
+              <input
+                type="password"
+                placeholder="Confirm password"
+                {...register("confirmPassword")}
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-slate-900 dark:text-white"
+              />
+              {errors.confirmPassword && (
+                <p className="text-xs text-red-500 mt-1">{errors.confirmPassword.message}</p>
+              )}
+            </div>
+
             <Button
-              variant="primary"
+              variant="secondary"
               type="submit"
               disabled={submitting}
               className="w-full py-4 text-center justify-center font-bold text-sm uppercase cursor-pointer"

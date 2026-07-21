@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
+import { SafeImage } from "@/components/ui/SafeImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -23,12 +24,7 @@ export default function CartPage() {
       toast.error("Your cart is empty");
       return;
     }
-    if (!user) {
-      toast.error("Please login to proceed with checkout.");
-      router.push("/login?redirect=/checkout");
-    } else {
-      router.push("/checkout");
-    }
+    router.push("/checkout");
   };
 
   return (
@@ -65,7 +61,7 @@ export default function CartPage() {
                     <div className="flex items-center space-x-4 w-full sm:w-auto text-left">
                       {/* Product Image */}
                       <div className="relative w-20 h-20 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden flex-shrink-0">
-                        <Image alt={item.product.name} src={item.product.images[0]} fill className="object-contain p-2" />
+                        <SafeImage alt={item.product.name} src={item.product.images[0]} fill className="object-contain p-2" />
                       </div>
                       
                       {/* Title & Desc */}

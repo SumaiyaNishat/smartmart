@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
@@ -34,11 +35,6 @@ const dictionary = {
     statCustomers: "5000+ Happy Customers",
     statDelivery: "Free Delivery",
     statSupport: "24/7 Support",
-    ourServices: "Our Service:",
-    serviceElectronics: "Electronic\nProducts",
-    serviceInDemand: "In-Demand\nProducts",
-    serviceBestPrices: "Best Prices",
-    serviceWarranty: "1-Year\nWarranty",
     productsHeading: "Featured Products",
     buyNow: "Buy Now",
     addToCart: "Add to Cart",
@@ -67,11 +63,6 @@ const dictionary = {
     statCustomers: "৫০০০+ সুখী ক্রেতা",
     statDelivery: "ফ্রি ডেলিভারি",
     statSupport: "২৪/৭ সাপোর্ট",
-    ourServices: "আমাদের সেবা:",
-    serviceElectronics: "ইলেকট্রনিক্স\nপণ্য",
-    serviceInDemand: "চাহিদা সম্পন্ন\nপণ্য",
-    serviceBestPrices: "সেরা মূল্য",
-    serviceWarranty: "১-বছরের\nওয়ারেন্টি",
     productsHeading: "বিশেষ পণ্যসমূহ",
     buyNow: "এখনই কিনুন",
     addToCart: "কার্টে যোগ করুন",

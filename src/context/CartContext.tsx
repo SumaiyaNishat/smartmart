@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
@@ -63,59 +64,57 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cartItems, isLoaded]);
 
-  const addToCart = (product: IProduct, quantity = 1) => {
-    setCartItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.product._id === product._id);
-      if (existingItem) {
-        const newQuantity = existingItem.quantity + quantity;
-        if (newQuantity > product.stock) {
-          toast.error(`Only ${product.stock} items left in stock`);
-          return prevItems;
-        }
-        toast.success(`Updated ${product.name} quantity in cart!`);
-        return prevItems.map((item) =>
+  const addToCart = React.useCallback((product: IProduct, quantity = 1) => {
+    const existingItem = cartItems.find((item) => item.product._id === product._id);
+    if (existingItem) {
+      const newQuantity = existingItem.quantity + quantity;
+      if (newQuantity > product.stock) {
+        toast.error(`Only ${product.stock} items left in stock`, { id: `stock-${product._id}` });
+        return;
+      }
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
           item.product._id === product._id ? { ...item, quantity: newQuantity } : item
-        );
-      }
+        )
+      );
+      toast.success(`Updated ${product.name} quantity in cart!`, { id: `add-${product._id}` });
+    } else {
       if (quantity > product.stock) {
-        toast.error(`Only ${product.stock} items left in stock`);
-        return prevItems;
+        toast.error(`Only ${product.stock} items left in stock`, { id: `stock-${product._id}` });
+        return;
       }
-      toast.success(`Added ${product.name} to cart!`);
-      return [...prevItems, { product, quantity }];
-    });
-  };
+      setCartItems((prevItems) => [...prevItems, { product, quantity }]);
+      toast.success(`Added ${product.name} to cart!`, { id: `add-${product._id}` });
+    }
+  }, [cartItems]);
 
-  const removeFromCart = (productId: string) => {
-    setCartItems((prevItems) => {
-      const updated = prevItems.filter((item) => item.product._id !== productId);
-      toast.success("Removed item from cart.");
-      return updated;
-    });
-  };
+  const removeFromCart = React.useCallback((productId: string) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item.product._id !== productId));
+    toast.success("Removed item from cart.", { id: `remove-${productId}` });
+  }, []);
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = React.useCallback((productId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
     }
-    setCartItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.product._id === productId) {
-          if (quantity > item.product.stock) {
-            toast.error(`Only ${item.product.stock} items left in stock`);
-            return item;
-          }
-          return { ...item, quantity };
-        }
-        return item;
-      })
-    );
-  };
+    const existingItem = cartItems.find((item) => item.product._id === productId);
+    if (existingItem) {
+      if (quantity > existingItem.product.stock) {
+        toast.error(`Only ${existingItem.product.stock} items left in stock`, { id: `stock-${productId}` });
+        return;
+      }
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item.product._id === productId ? { ...item, quantity } : item
+        )
+      );
+    }
+  }, [cartItems, removeFromCart]);
 
-  const clearCart = () => {
+  const clearCart = React.useCallback(() => {
     setCartItems([]);
-  };
+  }, []);
 
   const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 

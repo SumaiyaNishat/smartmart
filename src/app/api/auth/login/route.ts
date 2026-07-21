@@ -25,9 +25,10 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password } = result.data;
+    const normalizedEmail = email.toLowerCase();
 
     // Find User
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
       return NextResponse.json(
         { error: "Invalid email or password" },

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
@@ -65,12 +66,12 @@ export const Header: React.FC = () => {
             data-purpose="brand-logo"
             aria-label="SmartMart Home"
           >
-            <span className="text-primary">Smart</span>
-            <span className="text-secondary dark:text-white">Mart</span>
+            <span className="text-blue-900">Smart</span>
+            <span className="text-orange-700 dark:text-white">Mart</span>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-secondary dark:text-slate-200" aria-label="Main Navigation">
+          <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-orange-400 dark:text-slate-200" aria-label="Main Navigation">
             <Link href="/" className="hover:text-primary transition duration-200 rounded">
               {t("home")}
             </Link>
@@ -178,20 +179,13 @@ export const Header: React.FC = () => {
                     <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{user.name}</p>
                     <p className="text-xs text-slate-400 truncate">{user.email}</p>
                   </div>
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setIsProfileDropdownOpen(false)}
-                    className="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-left"
-                  >
-                    {t("dashboard")}
-                  </Link>
                   {user.role === "admin" && (
                     <Link
-                      href="/admin"
+                      href="/dashboard"
                       onClick={() => setIsProfileDropdownOpen(false)}
                       className="block px-4 py-2.5 text-sm text-primary hover:bg-slate-50 dark:hover:bg-slate-700 font-semibold text-left"
                     >
-                      {t("adminPanel")}
+                      Admin Dashboard
                     </Link>
                   )}
                   <button
@@ -266,20 +260,13 @@ export const Header: React.FC = () => {
           {user ? (
             <div className="flex flex-col space-y-3 text-left">
               <p className="text-sm font-bold text-slate-400">Logged in as: {user.name}</p>
-              <Link
-                href="/dashboard"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="text-lg font-bold text-secondary dark:text-slate-100 hover:text-primary transition"
-              >
-                {t("dashboard")}
-              </Link>
               {user.role === "admin" && (
                 <Link
-                  href="/admin"
+                  href="/dashboard"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="text-lg font-bold text-primary transition"
                 >
-                  {t("adminPanel")}
+                  Admin Dashboard
                 </Link>
               )}
               <button

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
@@ -10,7 +11,7 @@ const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  phone: z.string().optional(),
+  phone: z.string().min(11, "Phone number must be at least 11 digits").max(14, "Phone number too long"),
 });
 
 export async function POST(req: NextRequest) {
@@ -27,9 +28,10 @@ export async function POST(req: NextRequest) {
     }
 
     const { name, email, password, phone } = result.data;
+    const normalizedEmail = email.toLowerCase();
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return NextResponse.json(
         { error: "User with this email already exists" },
@@ -43,27 +45,15 @@ export async function POST(req: NextRequest) {
     // Create user
     const newUser = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       phone: phone || "",
       role: "customer",
     });
 
-    // Sign Token
-    const token = signToken({ userId: newUser._id.toString(), role: newUser.role });
-
-    // Set Cookie
-    const cookieStore = await cookies();
-    cookieStore.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/",
-    });
-
     return NextResponse.json(
       {
-        message: "Registration successful",
+        message: "Registration successful. Please log in.",
         user: {
           id: newUser._id,
           name: newUser.name,

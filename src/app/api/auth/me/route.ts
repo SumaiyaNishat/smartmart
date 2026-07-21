@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import dbConnect from "@/lib/dbConnect";
 import { User } from "@/models/User";
@@ -16,19 +16,19 @@ export async function GET() {
 
     const decoded = verifyToken(token);
     if (!decoded) {
-      return NextResponse.json({ user: null }, { status: 200 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await User.findById(decoded.userId).select("-password");
     if (!user) {
-      return NextResponse.json({ user: null }, { status: 200 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     if (user.blocked) {
       // Clear cookie if user is blocked
       cookieStore.delete("token");
       return NextResponse.json(
-        { error: "Account blocked by administrator", user: null },
+        { error: "Account blocked by administrator" },
         { status: 403 }
       );
     }
@@ -36,21 +36,6 @@ export async function GET() {
     return NextResponse.json({ user });
   } catch (error: unknown) {
     console.error("Auth Me GET Error:", error);
-    return NextResponse.json(
-      { error: "An internal server error occurred" },
-      { status: 500 }
-    );
-  }
-}
-
-// POST for Logout
-export async function POST() {
-  try {
-    const cookieStore = await cookies();
-    cookieStore.delete("token");
-    return NextResponse.json({ message: "Logged out successfully" });
-  } catch (error: unknown) {
-    console.error("Logout Error:", error);
     return NextResponse.json(
       { error: "An internal server error occurred" },
       { status: 500 }

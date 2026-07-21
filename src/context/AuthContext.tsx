@@ -1,8 +1,11 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import * as React from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+
 
 interface UserProfile {
   _id: string;
@@ -27,6 +30,7 @@ const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = React.useState<UserProfile | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const router = useRouter();
 
   const refreshUser = React.useCallback(async () => {
     try {
@@ -76,7 +80,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         password,
         phone,
       });
-      setUser(response.data.user);
       toast.success(response.data.message || "Registered successfully!");
       return true;
     } catch (err: unknown) {
@@ -91,9 +94,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
-      await axios.post("/api/auth/me");
+      await axios.post("/api/auth/logout");
       setUser(null);
       toast.success("Logged out successfully!");
+      router.push("/");
     } catch {
       toast.error("Logout failed.");
     }

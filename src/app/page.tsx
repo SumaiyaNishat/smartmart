@@ -4,7 +4,6 @@ import * as React from "react";
 import Lenis from "lenis";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
-import { Services } from "@/components/landing/Services";
 import { Products } from "@/components/landing/Products";
 import { Footer } from "@/components/landing/Footer";
 import { WhatsAppButton } from "@/components/landing/WhatsAppButton";
@@ -34,7 +33,6 @@ export default function Home() {
       <Header />
       <main className="container mx-auto px-6 flex-grow">
         <Hero />
-        <Services />
         <Products />
       </main>
       <Footer />
