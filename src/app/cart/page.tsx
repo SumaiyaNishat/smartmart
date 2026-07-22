@@ -63,7 +63,7 @@ export default function CartPage() {
                       <div className="relative w-20 h-20 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden flex-shrink-0">
                         <SafeImage alt={item.product.name} src={item.product.images[0]} fill className="object-contain p-2" />
                       </div>
-                      
+
                       {/* Title & Desc */}
                       <div>
                         <h4 className="text-sm font-extrabold text-secondary dark:text-white line-clamp-2 max-w-xs leading-snug">

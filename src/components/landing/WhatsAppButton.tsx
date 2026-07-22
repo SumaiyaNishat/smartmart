@@ -5,7 +5,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export const WhatsAppButton: React.FC = () => {
   const { t } = useLanguage();
-  const phoneNumber = "+8801700000000"; // Enterprise helpline number fallback
+  const phoneNumber = "+8801614599275"; // Enterprise helpline number fallback
   const message = "Hello SmartMart, I need help with my order.";
   const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 

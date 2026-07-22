@@ -57,21 +57,19 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 left-0 w-full z-50 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300">
-      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
         {/* Brand Logo */}
-        <div className="flex items-center space-x-12">
+        <div className="flex items-center gap-4 lg:gap-12">
           <Link
             href="/"
-            className="text-2xl font-extrabold tracking-tight focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg"
-            data-purpose="brand-logo"
-            aria-label="SmartMart Home"
+            className="text-lg sm:text-xl lg:text-2xl font-extrabold tracking-tight focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-lg"
           >
-            <span className="text-blue-900">Smart</span>
+            <span className="text-blue-900 dark:text-white">Smart</span>
             <span className="text-orange-700 dark:text-white">Mart</span>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center space-x-8 text-sm font-semibold text-orange-400 dark:text-slate-200" aria-label="Main Navigation">
+          <nav className="hidden lg:flex items-center space-x-8 text-sm font-semibold text-orange-400 dark:text-slate-200" aria-label="Main Navigation">
             <Link href="/" className="hover:text-primary transition duration-200 rounded">
               {t("home")}
             </Link>
@@ -92,7 +90,7 @@ export const Header: React.FC = () => {
                   placeholder={t("searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="px-4 py-1.5 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white w-48 md:w-64 transition-all duration-300"
+                  className="px-4 py-1.5 text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white w-32 sm:w-48 md:w-64 transition-all duration-300"
                   autoFocus
                 />
                 <button type="submit" className="absolute right-2 text-slate-400 hover:text-primary">
@@ -117,8 +115,7 @@ export const Header: React.FC = () => {
           {/* Language Switcher */}
           <button
             onClick={() => setLanguage(language === "en" ? "bn" : "en")}
-            className="text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-secondary dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
-            aria-label={`Switch language to ${language === "en" ? "Bangla" : "English"}`}
+            className="hidden lg:flex text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-secondary dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
           >
             {language === "en" ? "বাং" : "EN"}
           </button>
@@ -126,8 +123,7 @@ export const Header: React.FC = () => {
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="text-secondary dark:text-slate-200 hover:text-primary transition focus:outline-none p-2 rounded-lg"
-            aria-label="Toggle theme mode"
+            className="hidden lg:flex text-secondary dark:text-slate-200 hover:text-primary transition focus:outline-none p-2 rounded-lg"
           >
             {isDarkMode ? (
               // Sun Icon
@@ -142,10 +138,20 @@ export const Header: React.FC = () => {
             )}
           </button>
 
+
+          {!user && (
+            <Link
+              href="/login"
+              className="lg:hidden text-sm font-semibold text-secondary dark:text-slate-200 hover:text-primary transition"
+            >
+              {t("login")}
+            </Link>
+          )}
+
           {/* Shopping Cart Icon Link */}
           <Link
             href="/cart"
-            className="relative text-secondary dark:text-slate-200 hover:text-primary transition p-2 rounded-lg"
+            className="relative text-secondary dark:text-slate-200 hover:text-primary transition p-2 md:p-2 rounded-lg"
             aria-label="View shopping cart"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +207,7 @@ export const Header: React.FC = () => {
               )}
             </div>
           ) : (
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-4">
               <Link href="/login" className="text-sm font-bold text-secondary dark:text-slate-200 hover:text-primary transition">
                 {t("login")}
               </Link>
@@ -217,7 +223,7 @@ export const Header: React.FC = () => {
           {/* Mobile Hamburger menu */}
           <button
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            className="md:hidden text-secondary dark:text-slate-200 hover:text-primary focus:outline-none p-2 rounded-lg"
+            className="lg:hidden text-secondary dark:text-slate-200 hover:text-primary focus:outline-none p-2 rounded-lg"
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-nav"
             aria-label={isMobileMenuOpen ? "Close main menu" : "Open main menu"}
@@ -237,7 +243,7 @@ export const Header: React.FC = () => {
 
       {/* Mobile Menu Panel */}
       {isMobileMenuOpen && (
-        <div id="mobile-nav" className="md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 px-8 py-6 flex flex-col space-y-4 animate-fadeIn">
+        <div id="mobile-nav" className="lg:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 px-4 py-5 flex flex-col space-y-4 animate-fadeIn">
           <nav className="flex flex-col space-y-4 text-left">
             <Link
               href="/"
@@ -254,6 +260,41 @@ export const Header: React.FC = () => {
               {t("products")}
             </a>
           </nav>
+
+
+          <div className="flex flex-col gap-3 pt-2 border-t border-slate-200 dark:border-slate-700">
+            <button
+              onClick={() => setLanguage(language === "en" ? "bn" : "en")}
+              className="text-left text-lg font-semibold dark:text-white"
+            >
+              🌐 {language === "en" ? "বাংলা" : "English"}
+            </button>
+
+            <button
+              onClick={toggleDarkMode}
+              className="flex items-center justify-between w-full rounded-xl px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">
+                  {isDarkMode ? "☀️" : "🌙"}
+                </span>
+
+                <span className="font-semibold text-slate-700 dark:text-slate-200">
+                  {isDarkMode ? "Light Mode" : "Dark Mode"}
+                </span>
+              </div>
+
+              <div
+                className={`relative h-6 w-11 rounded-full transition-colors ${isDarkMode ? "bg-blue-200" : "bg-slate-300"
+                  }`}
+              >
+                <div
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${isDarkMode ? "translate-x-5" : "translate-x-0.5"
+                    }`}
+                />
+              </div>
+            </button>
+          </div>
 
           <hr className="border-slate-200/50 dark:border-slate-800/50" />
 

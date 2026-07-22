@@ -175,7 +175,7 @@ export default function ProductDetailsPage() {
       <Header />
 
       <main className="container mx-auto px-6 py-12 flex-grow">
-        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 p-6 md:p-10 shadow-sm grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/50 dark:border-slate-700/50 p-6 md:p-10 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-12">
 
           {/* Image Gallery Column */}
           <div className="flex flex-col space-y-4">

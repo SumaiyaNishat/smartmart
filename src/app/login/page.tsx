@@ -30,13 +30,13 @@ function LoginContent() {
     if (!loading && user) {
       if (user.role === "admin") {
         const target = (redirectUrl.startsWith("/admin") || redirectUrl.startsWith("/dashboard")) ? redirectUrl : "/dashboard";
-        router.push(target);
+        window.location.href = target;
       } else {
         const target = (redirectUrl.startsWith("/admin") || redirectUrl.startsWith("/dashboard")) ? "/" : redirectUrl;
-        router.push(target);
+        window.location.href = target;
       }
     }
-  }, [user, loading, router, redirectUrl]);
+  }, [user, loading, redirectUrl]);
 
   const {
     register,
@@ -48,11 +48,8 @@ function LoginContent() {
 
   const onSubmit = async (data: LoginInput) => {
     setSubmitting(true);
-    const success = await login(data.email, data.password);
+    await login(data.email, data.password);
     setSubmitting(false);
-    if (success) {
-      router.push(redirectUrl);
-    }
   };
 
   if (loading) {

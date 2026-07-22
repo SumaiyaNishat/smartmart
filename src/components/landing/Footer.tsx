@@ -10,7 +10,7 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="bg-slate-900 text-slate-400 py-16 mt-auto">
-      <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
+      <div className="container mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12">
         {/* Brand & About */}
         <div className="flex flex-col space-y-4">
           <Link href="/" className="text-2xl font-extrabold tracking-tight text-white focus:outline-none">

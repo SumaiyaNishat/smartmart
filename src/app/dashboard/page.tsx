@@ -633,6 +633,13 @@ export default function AdminDashboardPage() {
   };
 
   // Derived Values
+  const getOrderNumber = React.useCallback((orderId: string) => {
+    const index = orders.findIndex((o) => o._id === orderId);
+    if (index === -1) return "";
+    const chronologicalRank = orders.length - index;
+    return `#${1000 + chronologicalRank}`;
+  }, [orders]);
+
   const customers = users.filter((u) => u.role === "customer");
   const totalSpendForUser = (userId: string) => {
     return orders
@@ -779,8 +786,8 @@ export default function AdminDashboardPage() {
                 setGlobalSearch(""); // Reset search on tab change
               }}
               className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group text-left cursor-pointer ${activeTab === item.id
-                  ? "bg-primary text-white font-bold shadow-md shadow-primary/25"
-                  : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-primary text-white font-bold shadow-md shadow-primary/25"
+                : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
                 }`}
             >
               <div className="flex-shrink-0 transition-transform group-hover:scale-105">{item.icon}</div>
@@ -855,8 +862,8 @@ export default function AdminDashboardPage() {
                       setMobileSidebarOpen(false);
                     }}
                     className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all text-left cursor-pointer ${activeTab === item.id
-                        ? "bg-primary text-white font-bold"
-                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                      ? "bg-primary text-white font-bold"
+                      : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60"
                       }`}
                   >
                     <div className="flex-shrink-0">{item.icon}</div>
@@ -1275,8 +1282,8 @@ export default function AdminDashboardPage() {
                               <td className="px-6 py-4">
                                 <span
                                   className={`text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${order.deliveryStatus === "pending"
-                                      ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                                      : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                    ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                                     }`}
                                 >
                                   {order.deliveryStatus}
@@ -1555,7 +1562,7 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800 shadow-sm overflow-x-auto">
                       <table className="w-full text-sm text-left">
                         <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
                           <tr>
@@ -1581,8 +1588,8 @@ export default function AdminDashboardPage() {
                               <td className="px-6 py-4 text-xs font-semibold text-slate-400">{prod.category}</td>
                               <td className="px-6 py-4">
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${prod.stock === 0 ? "bg-red-100 text-red-700 dark:bg-red-950/20" :
-                                    prod.stock <= 5 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20" :
-                                      "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20"
+                                  prod.stock <= 5 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20" :
+                                    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20"
                                   }`}>
                                   {prod.stock} items left
                                 </span>
@@ -1850,7 +1857,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-sm overflow-x-auto">
                     <table className="w-full text-sm text-left">
                       <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
                         <tr>
@@ -1897,8 +1904,8 @@ export default function AdminDashboardPage() {
                             </td>
                             <td className="px-6 py-4">
                               <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${prod.stock === 0 ? "bg-red-100 text-red-700 dark:bg-red-950/20" :
-                                  prod.stock <= 5 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20" :
-                                    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20"
+                                prod.stock <= 5 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20" :
+                                  "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20"
                                 }`}>
                                 {prod.stock === 0 ? "Out of Stock" : prod.stock <= 5 ? "Low Stock" : "In Stock"}
                               </span>
@@ -1946,8 +1953,8 @@ export default function AdminDashboardPage() {
                           key={status}
                           onClick={() => setOrderStatusFilter(status)}
                           className={`px-3 py-1.5 text-xs font-bold rounded-xl cursor-pointer border transition ${orderStatusFilter === status
-                              ? "bg-primary text-white border-primary"
-                              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-850 text-slate-500"
+                            ? "bg-primary text-white border-primary"
+                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-850 text-slate-500"
                             }`}
                         >
                           {status}
@@ -1956,58 +1963,71 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-                    <table className="w-full text-sm text-left">
-                      <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
+                   {/* Desktop view table */}
+                  <div className="hidden md:block bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-sm">
+                    <table className="w-full table-fixed text-sm text-left">
+                      <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold border-b border-slate-100 dark:border-slate-800">
                         <tr>
-                          <th className="px-6 py-4">Order ID</th>
-                          <th className="px-6 py-4">Customer</th>
-                          <th className="px-6 py-4">Delivery Address</th>
-                          <th className="px-6 py-4">Total Price</th>
-                          <th className="px-6 py-4">Delivery Status</th>
-                          <th className="px-6 py-4 text-center">Actions</th>
+                          <th className="px-4 py-4 w-[10%]">Order #</th>
+                          <th className="px-4 py-4 w-[15%]">Customer</th>
+                          <th className="px-4 py-4 w-[25%]">Product</th>
+                          <th className="px-4 py-4 w-[25%]">Delivery Address</th>
+                          <th className="px-4 py-4 w-[10%]">Total</th>
+                          <th className="px-4 py-4 w-[10%]">Status</th>
+                          <th className="px-4 py-4 w-[15%] text-center">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-850 dark:text-slate-200 font-medium">
                         {filteredOrders.map((order) => (
-                          <tr key={order._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
-                            <td className="px-6 py-4 text-xs font-mono text-slate-400">{order._id}</td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-2">
-                                <p className="font-bold text-slate-900 dark:text-white">{order.customerName}</p>
-                                {(order.isGuest || !order.user) && (
-                                  <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[9px] font-black px-1.5 py-0.5 rounded uppercase">
-                                    Guest Order
-                                  </span>
-                                )}
+                          <tr key={order._id} className="hover:bg-slate-55/50 dark:hover:bg-slate-800/40 transition">
+                            <td className="px-4 py-4 text-xs font-mono text-slate-400">
+                              <span className="font-bold text-slate-900 dark:text-white" title={order._id}>{getOrderNumber(order._id)}</span>
+                            </td>
+                            <td className="px-4 py-4 text-xs">
+                              <div className="truncate font-bold text-slate-900 dark:text-white" title={order.customerName}>
+                                {order.customerName}
                               </div>
                               <span className="text-[10px] text-slate-400 font-normal">{order.phone}</span>
                             </td>
-                            <td className="px-6 py-4 text-xs max-w-xs truncate">
-                              {order.address}, {order.thana}, {order.district}
+                            {/* Product column */}
+                            <td className="px-4 py-4 text-xs">
+                              <p className="font-bold text-slate-900 dark:text-white truncate max-w-[220px]" title={order.product?.name || "Product Unavailable"}>
+                                {order.product?.name || "Product Unavailable"}
+                              </p>
+                              <span className="text-[10px] text-slate-400 font-normal block mt-0.5">Qty: {order.quantity}</span>
                             </td>
-                            <td className="px-6 py-4 font-black">৳{order.totalPrice.toFixed(0)}</td>
-                            <td className="px-6 py-4">
-                              <span className={`text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${order.deliveryStatus === "pending"
-                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                                  : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            {/* Address column */}
+                            <td className="px-4 py-4 text-xs">
+                              <div 
+                                className="whitespace-normal break-words line-clamp-2 hover:text-primary cursor-pointer transition-colors duration-200" 
+                                title={`${order.address}, ${order.thana}, ${order.district}`}
+                                onClick={() => setSelectedOrder(order)}
+                              >
+                                {order.address}, {order.thana}, {order.district}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 font-black text-slate-900 dark:text-white">৳{order.totalPrice.toFixed(0)}</td>
+                            <td className="px-4 py-4">
+                              <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${order.deliveryStatus === "pending"
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                                 }`}>
                                 {order.deliveryStatus}
                               </span>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="flex gap-2 justify-center items-center">
+                            <td className="px-4 py-4">
+                              <div className="flex gap-1.5 justify-center items-center">
                                 <button
                                   onClick={() => setSelectedOrder(order)}
-                                  className="p-1 text-slate-400 hover:text-primary cursor-pointer"
+                                  className="p-1 text-slate-400 hover:text-primary hover:bg-slate-100 dark:hover:bg-slate-805 rounded-lg cursor-pointer transition duration-200"
                                   title="View Order Details"
                                 >
-                                  <Eye size={14} />
+                                  <Eye size={13} />
                                 </button>
                                 <select
                                   value={order.deliveryStatus}
                                   onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value)}
-                                  className="text-[10px] font-bold px-2 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer text-slate-700 dark:text-slate-300"
+                                  className="text-[9px] font-bold px-1.5 py-1 bg-slate-55 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer text-slate-700 dark:text-slate-350 focus:outline-none"
                                 >
                                   <option value="pending">Pending</option>
                                   <option value="confirmed">Confirmed</option>
@@ -2018,10 +2038,10 @@ export default function AdminDashboardPage() {
                                 </select>
                                 <button
                                   onClick={() => handleDeleteOrder(order._id)}
-                                  className="p-1 text-red-500 hover:opacity-85 cursor-pointer"
+                                  className="p-1 text-red-500 hover:bg-red-55 dark:hover:bg-red-955/20 rounded-lg cursor-pointer transition duration-200"
                                   title="Delete Order"
                                 >
-                                  <Trash2 size={14} />
+                                  <Trash2 size={13} />
                                 </button>
                               </div>
                             </td>
@@ -2029,6 +2049,84 @@ export default function AdminDashboardPage() {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Mobile View: Cards Layout */}
+                  <div className="md:hidden space-y-4">
+                    {filteredOrders.map((order) => (
+                      <div
+                        key={order._id}
+                        className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3 text-xs text-left"
+                      >
+                        {/* Header: ID and Status */}
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-slate-900 dark:text-white" title={order._id}>{getOrderNumber(order._id)}</span>
+                          <span className={`text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${order.deliveryStatus === "pending"
+                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                            }`}>
+                            {order.deliveryStatus}
+                          </span>
+                        </div>
+
+                        {/* Customer Info */}
+                        <div className="border-t border-slate-100 dark:border-slate-800 pt-2 flex justify-between">
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-white">{order.customerName}</p>
+                            <p className="text-slate-400">{order.phone}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-slate-400">Total Price</p>
+                            <p className="font-black text-sm text-slate-900 dark:text-white">৳{order.totalPrice.toFixed(0)}</p>
+                          </div>
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="bg-slate-55 dark:bg-slate-950 p-3 rounded-xl text-left">
+                          <p className="font-bold text-slate-900 dark:text-white truncate" title={order.product?.name || "Product Unavailable"}>
+                            {order.product?.name || "Product Unavailable"}
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">Qty: {order.quantity}</p>
+                        </div>
+
+                        {/* Delivery Address */}
+                        <div>
+                          <p className="text-slate-400 font-semibold mb-0.5">Address</p>
+                          <p className="text-slate-600 dark:text-slate-350 line-clamp-2">{order.address}, {order.thana}, {order.district}</p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="border-t border-slate-100 dark:border-slate-800 pt-2.5 flex items-center justify-between gap-3">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setSelectedOrder(order)}
+                              className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 hover:text-primary dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl transition flex items-center gap-1 cursor-pointer"
+                            >
+                              <Eye size={12} /> View
+                            </button>
+                            <button
+                              onClick={() => handleDeleteOrder(order._id)}
+                              className="px-3 py-1.5 bg-red-55 dark:bg-red-955/20 hover:bg-red-100 text-red-500 font-bold rounded-xl transition flex items-center gap-1 cursor-pointer"
+                            >
+                              <Trash2 size={12} /> Delete
+                            </button>
+                          </div>
+
+                          <select
+                            value={order.deliveryStatus}
+                            onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value)}
+                            className="text-xs font-bold px-2 py-1.5 bg-slate-55 border border-slate-200 dark:border-slate-800 rounded-xl cursor-pointer text-slate-700 dark:text-slate-300"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </motion.div>
               )}
@@ -2047,7 +2145,7 @@ export default function AdminDashboardPage() {
                     <p className="text-xs text-slate-400">Total registered shoppers: {customers.length}</p>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-sm overflow-x-auto">
                     <table className="w-full text-sm text-left">
                       <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
                         <tr>
@@ -2117,7 +2215,7 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl shadow-sm overflow-x-auto">
                     <table className="w-full text-sm text-left">
                       <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
                         <tr>
@@ -2328,8 +2426,8 @@ export default function AdminDashboardPage() {
                             </div>
                             <div className="flex flex-col items-end gap-3">
                               <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg border ${c.status === "Active"
-                                  ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900"
-                                  : "text-slate-400 bg-slate-50 dark:bg-slate-800/20 border-slate-100 dark:border-slate-800"
+                                ? "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900"
+                                : "text-slate-400 bg-slate-50 dark:bg-slate-800/20 border-slate-100 dark:border-slate-800"
                                 }`}>
                                 {c.status}
                               </span>
@@ -2728,8 +2826,10 @@ export default function AdminDashboardPage() {
                 <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Order ID</span>
-                      <p className="font-mono mt-0.5 text-slate-500 dark:text-slate-400 break-all">{selectedOrder._id}</p>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Order Number</span>
+                      <p className="font-bold mt-0.5 text-slate-800 dark:text-white">{getOrderNumber(selectedOrder._id)}</p>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mt-2.5">Database ID</span>
+                      <p className="font-mono text-[10px] text-slate-500 dark:text-slate-400 break-all">{selectedOrder._id}</p>
                     </div>
                     <div>
                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Transaction Date</span>

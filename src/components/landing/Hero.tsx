@@ -103,7 +103,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mt-10 grid grid-cols-4 gap-4"
+            className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4"
           >
             <div className="rounded-2xl bg-white/70 backdrop-blur-md border border-white shadow-lg p-4">
               <p className="text-4xl item-center justify-center pb-2">📖</p>
