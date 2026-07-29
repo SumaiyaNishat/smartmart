@@ -3,7 +3,9 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "smartmart-super-secret-key-123456";
 
 interface TokenPayload {
+  id: string;
   userId: string;
+  email: string;
   role: "customer" | "admin";
 }
 
