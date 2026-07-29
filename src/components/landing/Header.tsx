@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useLanguage } from "@/context/LanguageContext";
+import { LogIn, UserPlus } from "lucide-react";
 
 export const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -102,7 +103,7 @@ export const Header: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="text-secondary dark:text-slate-200 hover:text-primary transition focus:outline-none p-2 rounded-lg"
+                className="text-blue-800 dark:text-slate-200 hover:text-primary transition focus:outline-none p-2 rounded-lg"
                 aria-label="Open search bar"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +116,7 @@ export const Header: React.FC = () => {
           {/* Language Switcher */}
           <button
             onClick={() => setLanguage(language === "en" ? "bn" : "en")}
-            className="hidden lg:flex text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-secondary dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+            className="hidden lg:flex text-xs font-bold px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-primary dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
           >
             {language === "en" ? "বাং" : "EN"}
           </button>
@@ -123,7 +124,7 @@ export const Header: React.FC = () => {
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="hidden lg:flex text-secondary dark:text-slate-200 hover:text-primary transition focus:outline-none p-2 rounded-lg"
+            className="hidden lg:flex text-orange-400 dark:text-slate-200 hover:text-orange-800 transition focus:outline-none p-2 rounded-lg"
           >
             {isDarkMode ? (
               // Sun Icon
@@ -151,7 +152,7 @@ export const Header: React.FC = () => {
           {/* Shopping Cart Icon Link */}
           <Link
             href="/cart"
-            className="relative text-secondary dark:text-slate-200 hover:text-primary transition p-2 md:p-2 rounded-lg"
+            className="relative text-orange-400 dark:text-slate-200 hover:text-orange-800 transition p-2 md:p-2 rounded-lg"
             aria-label="View shopping cart"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,14 +209,19 @@ export const Header: React.FC = () => {
             </div>
           ) : (
             <div className="hidden lg:flex items-center space-x-4">
-              <Link href="/login" className="text-sm font-bold text-secondary dark:text-slate-200 hover:text-primary transition">
-                {t("login")}
+              <Link
+                href="/login"
+                className="flex items-center justify-center gap-2 h-10 px-5 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 rounded-xl hover:-translate-y-0.5 hover:shadow-md hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer font-bold text-sm"
+              >
+                <LogIn size={18} />
+                <span>{t("login")}</span>
               </Link>
               <Link
                 href="/register"
-                className="text-sm font-bold bg-primary text-white px-5 py-2 rounded-xl shadow-md shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-300"
+                className="flex items-center justify-center gap-2 h-10 px-5 bg-primary text-white rounded-xl shadow-md shadow-primary/20 hover:-translate-y-0.5 hover:shadow-lg active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer font-bold text-sm"
               >
-                {t("register")}
+                <UserPlus size={18} />
+                <span>{t("register")}</span>
               </Link>
             </div>
           )}
@@ -321,20 +327,22 @@ export const Header: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col gap-3">
               <Link
                 href="/login"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-lg font-bold text-secondary dark:text-slate-100 hover:text-primary transition text-center"
+                className="flex items-center justify-center gap-2 h-12 w-full border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 rounded-xl hover:-translate-y-0.5 hover:shadow-md hover:bg-blue-50 dark:hover:bg-slate-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 cursor-pointer font-bold text-base"
               >
-                {t("login")}
+                <LogIn size={18} />
+                <span>{t("login")}</span>
               </Link>
               <Link
                 href="/register"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block text-center text-lg font-bold bg-primary text-white py-3 rounded-xl shadow-md hover:opacity-90 transition duration-300"
+                className="flex items-center justify-center gap-2 h-12 w-full bg-primary text-white rounded-xl shadow-md shadow-primary/20 hover:-translate-y-0.5 hover:shadow-lg active:scale-95 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer font-bold text-base"
               >
-                {t("register")}
+                <UserPlus size={18} />
+                <span>{t("register")}</span>
               </Link>
             </div>
           )}

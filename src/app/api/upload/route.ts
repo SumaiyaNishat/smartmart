@@ -12,13 +12,28 @@ export async function POST(req: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
+    console.log("[Upload API] Checking token presence...");
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.warn("[Upload API] No token found in cookies.");
+      return NextResponse.json({ error: "Please log in to upload images." }, { status: 401 });
     }
 
+    console.log("[Upload API] Verifying JWT token...");
     const decoded = verifyToken(token);
-    if (!decoded || decoded.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden. Admin access required." }, { status: 403 });
+    if (!decoded) {
+      console.warn("[Upload API] Token verification failed (invalid or expired token).");
+      return NextResponse.json({ error: "Your session has expired. Please sign in again." }, { status: 401 });
+    }
+
+    console.log("[Upload API] Decoded JWT payload:", decoded);
+    if (decoded.role !== "admin") {
+      console.warn(`[Upload API] Forbidden. User role is "${decoded.role}", but "admin" is required.`);
+      return NextResponse.json({ error: "Admin permission is required." }, { status: 403 });
+    }
+
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.error("[Upload API] Cloudinary configuration environment variables are missing.");
+      return NextResponse.json({ error: "Cloudinary configuration is missing." }, { status: 500 });
     }
 
     const formData = await req.formData();
@@ -57,8 +72,8 @@ export async function POST(req: NextRequest) {
       publicId: result.publicId,
     });
   } catch (error: any) {
-    console.error("Upload API Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to upload image" }, { status: 500 });
+    console.error("[Upload API] Upload Error detail:", error);
+    return NextResponse.json({ error: error.message || "Image upload failed. Please try again." }, { status: 500 });
   }
 }
 
@@ -68,13 +83,23 @@ export async function DELETE(req: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
+    console.log("[Upload API] Checking token presence for DELETE...");
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.warn("[Upload API DELETE] No token found in cookies.");
+      return NextResponse.json({ error: "Please log in to upload images." }, { status: 401 });
     }
 
+    console.log("[Upload API] Verifying JWT token for DELETE...");
     const decoded = verifyToken(token);
-    if (!decoded || decoded.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden. Admin access required." }, { status: 403 });
+    if (!decoded) {
+      console.warn("[Upload API DELETE] Token verification failed (invalid or expired token).");
+      return NextResponse.json({ error: "Your session has expired. Please sign in again." }, { status: 401 });
+    }
+
+    console.log("[Upload API DELETE] Decoded JWT payload:", decoded);
+    if (decoded.role !== "admin") {
+      console.warn(`[Upload API DELETE] Forbidden. User role is "${decoded.role}", but "admin" is required.`);
+      return NextResponse.json({ error: "Admin permission is required." }, { status: 403 });
     }
 
     const body = await req.json();
@@ -103,7 +128,7 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ success: true, message: "Image deleted successfully" });
   } catch (error: any) {
-    console.error("Delete API Error:", error);
+    console.error("[Upload API] Delete Error detail:", error);
     return NextResponse.json({ error: error.message || "Failed to delete image" }, { status: 500 });
   }
 }
