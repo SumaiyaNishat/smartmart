@@ -9,10 +9,11 @@ import {
   RotateCcw,
   PlayCircle,
 } from "lucide-react";
+import Link from "next/link";
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen overflow-hidden pt-25">
+    <section className="relative min-h-screen overflow-hidden pt-10">
 
       {/* Background Image */}
       <Image
@@ -44,7 +45,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: .2 }}
-            className="inline-flex items-center rounded-full bg-blue-600 text-white px-5 py-1 text-sm font-semibold shadow-lg"
+            className="inline-flex items-center rounded-full bg-blue-600 text-white px-5 py-2 text-sm font-semibold shadow-lg"
           >
             ✨ আল্লাহর বাণী সবসময় সাথে রাখুন
           </motion.div>
@@ -55,7 +56,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: .3 }}
-            className="mt-7 text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-[#083B66]"
+            className="mt-4 text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-[#083B66]"
           >
             ডিজিটাল
             <br />
@@ -85,10 +86,13 @@ export function Hero() {
             className="mt-10 flex flex-wrap gap-4"
           >
 
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold flex items-center gap-2 shadow-xl transition">
+            <Link
+              href="/#our-products"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold inline-flex items-center justify-center gap-2 shadow-xl transition"
+            >
               অর্ডার করুন
               <ArrowRight size={20} />
-            </button>
+            </Link>
 
             <button className="bg-white/70 backdrop-blur-md border border-black px-8 py-4 rounded-xl font-semibold flex items-center gap-2 hover:bg-white transition">
               <PlayCircle size={20} />
@@ -103,7 +107,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-4"
+            className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-4"
           >
             <div className="rounded-2xl bg-white/70 backdrop-blur-md border border-white shadow-lg p-4">
               <p className="text-4xl item-center justify-center pb-2">📖</p>

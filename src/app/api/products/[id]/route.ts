@@ -10,8 +10,10 @@ import { deleteFromCloudinary, getPublicIdFromUrl } from "@/lib/cloudinary";
 const seedProducts = [
   {
     _id: "65c1f0f29c426639bca0b001",
-    name: "প্লাগ ইন কুরাআন",
+    name: "প্লাগ ইন কুরআন",
     description: "Experience premium sound quality with active hybrid noise cancelling engineering.",
+    descriptionEn: "Experience premium sound quality with active hybrid noise cancelling engineering.",
+    descriptionBn: "অ্যাক্টিভ হাইব্রিড নয়েজ ক্যানসেলিং প্রযুক্তির মাধ্যমে প্রিমিয়াম সাউন্ড কোয়ালিটির অভিজ্ঞতা নিন।",
     price: 4990,
     images: [
       "https://res.cloudinary.com/dv0ayrve0/image/upload/v1784617606/066f9458-7f79-4470-8b93-26c83d58d9ec_jebfam.jpg"
@@ -26,6 +28,8 @@ const seedProducts = [
     _id: "65c1f0f29c426639bca0b002",
     name: "Turbo Fan",
     description: "Track your health metrics, dynamic workouts, heart rate, and sleep analytics.",
+    descriptionEn: "High power multi-speed portable turbo cooling fan with rechargeable battery.",
+    descriptionBn: "রিচার্জেবল ব্যাটারিসহ হাই-পাওয়ার মাল্টি-স্পিড পোর্টেবল টার্বো কুলিং ফ্যান।",
     price: 3490,
     images: [
       "https://res.cloudinary.com/dv0ayrve0/image/upload/v1784626040/3f2b4b89-c533-4f89-9e36-414eddf5d070_uuloyy.jpg"
@@ -40,6 +44,8 @@ const seedProducts = [
     _id: "65c1f0f29c426639bca0b003",
     name: "UltraThin Developer Laptop 15",
     description: "Supercharged M-series processors with 16GB RAM for optimal coding throughput.",
+    descriptionEn: "Supercharged M-series processors with 16GB RAM for optimal coding throughput.",
+    descriptionBn: "অপটিমাল কোডিং ও পারফরম্যান্সের জন্য ১৬ জিবি র‍্যাম এবং এম-সিরিজ প্রসেসর।",
     price: 89000,
     images: [
       "https://res.cloudinary.com/dv0ayrve0/image/upload/v1784617606/066f9458-7f79-4470-8b93-26c83d58d9ec_jebfam.jpg"
@@ -54,6 +60,8 @@ const seedProducts = [
     _id: "65c1f0f29c426639bca0b004",
     name: "Smart Speaker Voice Hub",
     description: "Intelligent speaker with premium acoustic output and integrated smart home control.",
+    descriptionEn: "Intelligent speaker with premium acoustic output and integrated smart home control.",
+    descriptionBn: "প্রিমিয়াম একোস্টিক আউটপুট এবং সমন্বিত স্মার্ট হোম কন্ট্রোলসহ ইন্টেলিজেন্ট স্পিকার।",
     price: 2490,
     images: [
       "https://res.cloudinary.com/dv0ayrve0/image/upload/v1784617606/066f9458-7f79-4470-8b93-26c83d58d9ec_jebfam.jpg"
@@ -146,18 +154,25 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const fieldsToUpdate = [
       "name",
       "description",
+      "descriptionEn",
+      "descriptionBn",
       "price",
       "images",
       "category",
       "stock",
       "discount",
       "featured",
+      "displayOrder",
     ];
     fieldsToUpdate.forEach((field) => {
       if (body[field] !== undefined) {
         (product as any)[field] = body[field];
       }
     });
+
+    if (product.descriptionEn || product.descriptionBn) {
+      product.description = product.descriptionEn || product.descriptionBn || product.description;
+    }
 
     await product.save();
 

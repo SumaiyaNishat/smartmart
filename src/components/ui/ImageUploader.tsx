@@ -108,11 +108,18 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
       }
     } catch (error: unknown) {
       console.error("Upload error:", error);
-      const message = axios.isAxiosError(error)
-        ? error.response?.data?.error
-        : error instanceof Error
-        ? error.message
-        : "Failed to upload image(s)";
+      let message = "Failed to upload image(s)";
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 403) {
+          message = error.response.data?.error || "Admin permission is required.";
+        } else if (error.response?.status === 401) {
+          message = error.response.data?.error || "Please log in to upload images.";
+        } else {
+          message = error.response?.data?.error || error.response?.data?.message || error.message || "Failed to upload image(s)";
+        }
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
       toast.error(message, { id: toastId });
     } finally {
       setUploading(false);

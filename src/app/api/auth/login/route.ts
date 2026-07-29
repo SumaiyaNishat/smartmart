@@ -54,7 +54,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Sign Token
-    const token = signToken({ userId: user._id.toString(), role: user.role });
+    const token = signToken({
+      id: user._id.toString(),
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    });
 
     // Set Cookie
     const cookieStore = await cookies();
