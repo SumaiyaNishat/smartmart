@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-hot-toast";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { ImageUploader } from "@/components/ui/ImageUploader";
 import {
   LayoutDashboard,
@@ -27,6 +27,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  GripVertical,
   Menu,
   Search,
   Bell,
@@ -103,6 +106,8 @@ interface ProductDetail {
   _id: string;
   name: string;
   description: string;
+  descriptionEn?: string;
+  descriptionBn?: string;
   price: number;
   images: string[];
   category: string;
@@ -110,7 +115,36 @@ interface ProductDetail {
   discount: number;
   featured: boolean;
   rating?: number;
+  displayOrder?: number;
 }
+
+export interface ProductFormData {
+  name: string;
+  description: string;
+  descriptionEn: string;
+  descriptionBn: string;
+  price: number;
+  category: string;
+  stock: number;
+  discount: number;
+  featured: boolean;
+  displayOrder: number;
+  images: string[];
+}
+
+const initialProductFormState: ProductFormData = {
+  name: "",
+  description: "",
+  descriptionEn: "",
+  descriptionBn: "",
+  price: 0,
+  category: "Electronics",
+  stock: 10,
+  discount: 0,
+  featured: false,
+  displayOrder: 0,
+  images: [],
+};
 
 interface UserDetail {
   _id: string;
@@ -209,6 +243,8 @@ export default function AdminDashboardPage() {
   const [loadingData, setLoadingData] = React.useState(true);
   const [actionInProgress, setActionInProgress] = React.useState(false);
   const [uploadingImages, setUploadingImages] = React.useState(false);
+  const [isReordering, setIsReordering] = React.useState(false);
+  const isReorderingRef = React.useRef(false);
 
   // Modals & Detail States
   const [selectedOrder, setSelectedOrder] = React.useState<OrderDetail | null>(null);
@@ -223,16 +259,7 @@ export default function AdminDashboardPage() {
   const [coupons, setCoupons] = React.useState(initialCoupons);
 
   // Creation forms
-  const [newProductForm, setNewProductForm] = React.useState({
-    name: "",
-    description: "",
-    price: 0,
-    category: "Electronics",
-    stock: 10,
-    discount: 0,
-    featured: false,
-    images: [] as string[]
-  });
+  const [newProductForm, setNewProductForm] = React.useState<ProductFormData>(initialProductFormState);
 
   const [newCouponForm, setNewCouponForm] = React.useState({
     code: "",
@@ -362,16 +389,31 @@ export default function AdminDashboardPage() {
   // Form Submissions & API handlers
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const descEn = (newProductForm.descriptionEn || "").trim();
+    const descBn = (newProductForm.descriptionBn || "").trim();
+    const descBase = (newProductForm.description || "").trim();
+
+    if (!descEn && !descBn && !descBase) {
+      toast.error("Please provide at least an English or Bangla product description.");
+      return;
+    }
+
+    const finalDescription = descEn || descBn || descBase;
+
     setActionInProgress(true);
     try {
       const payload = {
         name: newProductForm.name,
-        description: newProductForm.description,
+        description: finalDescription,
+        descriptionEn: descEn || finalDescription,
+        descriptionBn: descBn,
         price: Number(newProductForm.price),
         category: newProductForm.category,
         stock: Number(newProductForm.stock),
         discount: Number(newProductForm.discount),
         featured: newProductForm.featured,
+        displayOrder: Number(newProductForm.displayOrder || 0),
         images: newProductForm.images
       };
 
@@ -384,16 +426,7 @@ export default function AdminDashboardPage() {
       }
 
       setEditingProduct(null);
-      setNewProductForm({
-        name: "",
-        description: "",
-        price: 0,
-        category: "Electronics",
-        stock: 10,
-        discount: 0,
-        featured: false,
-        images: []
-      });
+      setNewProductForm(initialProductFormState);
       setActiveTab("products");
       fetchAllData();
     } catch (err) {
@@ -408,15 +441,62 @@ export default function AdminDashboardPage() {
     setEditingProduct(prod);
     setNewProductForm({
       name: prod.name,
-      description: prod.description,
+      description: prod.description || "",
+      descriptionEn: prod.descriptionEn || prod.description || "",
+      descriptionBn: prod.descriptionBn || "",
       price: prod.price,
       category: prod.category,
       stock: prod.stock,
       discount: prod.discount,
       featured: prod.featured,
+      displayOrder: prod.displayOrder ?? 0,
       images: prod.images || []
     });
     setActiveTab("add-product");
+  };
+
+  const handleReorderProducts = async (reorderedList: ProductDetail[]) => {
+    // Prevent duplicate concurrent reorder API calls
+    if (isReorderingRef.current) return;
+
+    isReorderingRef.current = true;
+    setIsReordering(true);
+
+    const TOAST_ID = "reorder-product-toast";
+    const previousProductsList = [...products];
+
+    // Recalculate 1-indexed displayOrder sequentially without gaps or duplicates
+    const updatedSubList = reorderedList.map((item, index) => ({
+      ...item,
+      displayOrder: index + 1,
+    }));
+
+    // Optimistically update local state for 60fps immediate feedback
+    setProducts((prev) => {
+      const map = new Map(updatedSubList.map((p) => [p._id, p]));
+      return prev.map((p) => map.get(p._id) || p);
+    });
+
+    const payload = updatedSubList.map((p) => ({
+      id: p._id,
+      displayOrder: p.displayOrder,
+    }));
+
+    // Display single loading toast that updates in-place
+    toast.loading("Saving product order...", { id: TOAST_ID });
+
+    try {
+      await axios.put("/api/products", { orders: payload });
+      toast.success("Product order updated successfully.", { id: TOAST_ID });
+    } catch (err) {
+      console.error("Failed to save product order:", err);
+      toast.error("Failed to update product order. Restored previous order.", { id: TOAST_ID });
+      // Rollback to previous state on API failure
+      setProducts(previousProductsList);
+    } finally {
+      isReorderingRef.current = false;
+      setIsReordering(false);
+    }
   };
 
   const handleDeleteProduct = async (productId: string) => {
@@ -771,16 +851,7 @@ export default function AdminDashboardPage() {
               onClick={() => {
                 if (item.id === "add-product") {
                   setEditingProduct(null);
-                  setNewProductForm({
-                    name: "",
-                    description: "",
-                    price: 0,
-                    category: "Electronics",
-                    stock: 10,
-                    discount: 0,
-                    featured: false,
-                    images: []
-                  });
+                  setNewProductForm(initialProductFormState);
                 }
                 setActiveTab(item.id);
                 setGlobalSearch(""); // Reset search on tab change
@@ -846,16 +917,7 @@ export default function AdminDashboardPage() {
                     onClick={() => {
                       if (item.id === "add-product") {
                         setEditingProduct(null);
-                        setNewProductForm({
-                          name: "",
-                          description: "",
-                          price: 0,
-                          category: "Electronics",
-                          stock: 10,
-                          discount: 0,
-                          featured: false,
-                          images: []
-                        });
+                        setNewProductForm(initialProductFormState);
                       }
                       setActiveTab(item.id);
                       setGlobalSearch("");
@@ -1444,7 +1506,15 @@ export default function AdminDashboardPage() {
                 >
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="text-left">
-                      <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Store Catalog</h3>
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Store Catalog</h3>
+                        {isReordering && (
+                          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full animate-pulse">
+                            <Loader2 size={12} className="animate-spin text-primary" />
+                            <span>Saving order...</span>
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-400">Total registered products: {products.length}</p>
                     </div>
 
@@ -1480,16 +1550,7 @@ export default function AdminDashboardPage() {
                       <button
                         onClick={() => {
                           setEditingProduct(null);
-                          setNewProductForm({
-                            name: "",
-                            description: "",
-                            price: 0,
-                            category: "Electronics",
-                            stock: 10,
-                            discount: 0,
-                            featured: false,
-                            images: []
-                          });
+                          setNewProductForm(initialProductFormState);
                           setActiveTab("add-product");
                         }}
                         className="px-3.5 py-1.5 text-xs bg-primary hover:opacity-95 text-white font-bold rounded-xl shadow transition cursor-pointer flex items-center gap-1.5"
@@ -1500,20 +1561,35 @@ export default function AdminDashboardPage() {
                   </div>
 
                   {productViewMode === "grid" ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                      {filteredProducts.map((prod) => (
-                        <div
+                    <Reorder.Group
+                      axis="y"
+                      values={filteredProducts}
+                      onReorder={handleReorderProducts}
+                      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                    >
+                      {filteredProducts.map((prod, idx) => (
+                        <Reorder.Item
                           key={prod._id}
-                          className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.01] transition duration-200 flex flex-col text-left group"
+                          value={prod}
+                          whileDrag={{
+                            scale: 1.03,
+                            boxShadow: "0 20px 30px rgba(0,0,0,0.2)",
+                            opacity: 0.9,
+                          }}
+                          className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition duration-200 flex flex-col text-left group cursor-grab active:cursor-grabbing select-none"
                         >
                           <div className="h-44 bg-slate-100 dark:bg-slate-800 relative">
+                            <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 bg-slate-950/80 text-white backdrop-blur-md text-[10px] font-black px-2.5 py-1 rounded-xl shadow cursor-grab active:cursor-grabbing">
+                              <GripVertical size={13} className="text-slate-300" />
+                              <span>Order #{prod.displayOrder ?? idx + 1}</span>
+                            </div>
                             {prod.images?.[0] ? (
-                              <img src={prod.images[0]} alt={prod.name} className="w-full h-full object-cover" />
+                              <img src={prod.images[0]} alt={prod.name} className="w-full h-full object-cover pointer-events-none" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-slate-400">No Image</div>
                             )}
                             {prod.featured && (
-                              <span className="absolute top-3 left-3 bg-primary text-white text-[8px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider shadow">Featured</span>
+                              <span className="absolute bottom-3 left-3 bg-primary text-white text-[8px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider shadow">Featured</span>
                             )}
                             {prod.discount > 0 && (
                               <span className="absolute top-3 right-3 bg-orange-500 text-white text-[8px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider shadow">-{prod.discount}% Off</span>
@@ -1523,7 +1599,7 @@ export default function AdminDashboardPage() {
                             <div>
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{prod.category}</span>
                               <h4 className="font-extrabold text-sm text-slate-950 dark:text-white truncate mt-0.5">{prod.name}</h4>
-                              <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-normal">{prod.description}</p>
+                              <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-normal">{prod.descriptionEn || prod.descriptionBn || prod.description}</p>
                             </div>
                             <div className="mt-4 flex items-center justify-between">
                               <div>
@@ -1535,21 +1611,24 @@ export default function AdminDashboardPage() {
 
                               <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
-                                  onClick={() => setViewProductDetails(prod)}
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setViewProductDetails(prod); }}
                                   className="p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 rounded-lg transition cursor-pointer"
                                   title="View Details"
                                 >
                                   <Eye size={12} />
                                 </button>
                                 <button
-                                  onClick={() => handleEditProductTrigger(prod)}
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleEditProductTrigger(prod); }}
                                   className="p-1.5 bg-primary/10 text-primary border border-primary/10 hover:bg-primary/25 rounded-lg transition cursor-pointer"
                                   title="Edit Product"
                                 >
                                   <Edit size={12} />
                                 </button>
                                 <button
-                                  onClick={() => handleDeleteProduct(prod._id)}
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteProduct(prod._id); }}
                                   className="p-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-500 rounded-lg transition cursor-pointer"
                                   title="Delete Product"
                                 >
@@ -1558,55 +1637,87 @@ export default function AdminDashboardPage() {
                               </div>
                             </div>
                           </div>
-                        </div>
+                        </Reorder.Item>
                       ))}
-                    </div>
+                    </Reorder.Group>
                   ) : (
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800 shadow-sm overflow-x-auto">
-                      <table className="w-full text-sm text-left">
-                        <thead className="text-xs uppercase bg-slate-50 dark:bg-slate-800 text-slate-400 font-bold">
-                          <tr>
-                            <th className="px-6 py-3">Product Info</th>
-                            <th className="px-6 py-3">Category</th>
-                            <th className="px-6 py-3">Stock Level</th>
-                            <th className="px-6 py-3 text-right">Price</th>
-                            <th className="px-6 py-3 text-center">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200 font-medium">
-                          {filteredProducts.map((prod) => (
-                            <tr key={prod._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
-                              <td className="px-6 py-4 flex items-center gap-3">
-                                <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden flex-shrink-0">
-                                  {prod.images?.[0] && <img src={prod.images[0]} alt="" className="w-full h-full object-cover" />}
-                                </div>
-                                <div className="truncate max-w-sm text-left">
-                                  <p className="font-bold text-slate-900 dark:text-white">{prod.name}</p>
-                                  <span className="text-[10px] text-slate-400 font-normal line-clamp-1">{prod.description}</span>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 text-xs font-semibold text-slate-400">{prod.category}</td>
-                              <td className="px-6 py-4">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${prod.stock === 0 ? "bg-red-100 text-red-700 dark:bg-red-950/20" :
-                                  prod.stock <= 5 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/20" :
-                                    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20"
-                                  }`}>
-                                  {prod.stock} items left
+                    <Reorder.Group
+                      axis="y"
+                      values={filteredProducts}
+                      onReorder={handleReorderProducts}
+                      className="space-y-3"
+                    >
+                      {filteredProducts.map((prod, idx) => (
+                        <Reorder.Item
+                          key={prod._id}
+                          value={prod}
+                          whileDrag={{
+                            scale: 1.01,
+                            boxShadow: "0 15px 30px rgba(0,0,0,0.15)",
+                            opacity: 0.95,
+                          }}
+                          className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition duration-200 cursor-grab active:cursor-grabbing select-none group"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-grab active:cursor-grabbing">
+                              <GripVertical size={18} />
+                            </div>
+                            <span className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-black text-slate-700 dark:text-slate-300 flex-shrink-0">
+                              #{prod.displayOrder ?? idx + 1}
+                            </span>
+                            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden flex-shrink-0">
+                              {prod.images?.[0] && <img src={prod.images[0]} alt="" className="w-full h-full object-cover pointer-events-none" />}
+                            </div>
+                            <div className="truncate text-left min-w-0">
+                              <h4 className="font-extrabold text-sm text-slate-950 dark:text-white truncate">{prod.name}</h4>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{prod.category}</span>
+                                <span className="text-[10px] text-slate-400">•</span>
+                                <span className={`text-[10px] font-bold ${prod.stock <= 5 ? "text-orange-500" : "text-emerald-500"}`}>
+                                  {prod.stock === 0 ? "Out of Stock" : `${prod.stock} in stock`}
                                 </span>
-                              </td>
-                              <td className="px-6 py-4 text-right font-black text-slate-950 dark:text-white">৳{prod.price}</td>
-                              <td className="px-6 py-4">
-                                <div className="flex gap-2 justify-center">
-                                  <button onClick={() => setViewProductDetails(prod)} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"><Eye size={14} /></button>
-                                  <button onClick={() => handleEditProductTrigger(prod)} className="p-1 text-primary hover:opacity-85 cursor-pointer"><Edit size={14} /></button>
-                                  <button onClick={() => handleDeleteProduct(prod._id)} className="p-1 text-red-500 hover:opacity-85 cursor-pointer"><Trash2 size={14} /></button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-6 flex-shrink-0">
+                            <div className="text-right">
+                              <p className="text-sm font-black text-slate-950 dark:text-white">৳{prod.price}</p>
+                              {prod.discount > 0 && (
+                                <span className="text-[10px] font-bold text-orange-500">-{prod.discount}% Off</span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setViewProductDetails(prod); }}
+                                className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 rounded-xl transition cursor-pointer"
+                                title="View Details"
+                              >
+                                <Eye size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleEditProductTrigger(prod); }}
+                                className="p-2 bg-primary/10 text-primary border border-primary/10 hover:bg-primary/25 rounded-xl transition cursor-pointer"
+                                title="Edit Product"
+                              >
+                                <Edit size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteProduct(prod._id); }}
+                                className="p-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 text-red-500 rounded-xl transition cursor-pointer"
+                                title="Delete Product"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        </Reorder.Item>
+                      ))}
+                    </Reorder.Group>
                   )}
                 </motion.div>
               )}
@@ -1640,15 +1751,32 @@ export default function AdminDashboardPage() {
                           />
                         </div>
 
-                        <div className="col-span-2">
-                          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Description *</label>
-                          <textarea
-                            required
-                            value={newProductForm.description}
-                            onChange={(e) => setNewProductForm({ ...newProductForm, description: e.target.value })}
-                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none dark:text-white text-sm h-24"
-                            placeholder="Provide specifications, features, warranty guidelines..."
-                          />
+                        <div className="col-span-2 space-y-4">
+                          <div>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
+                              <span>English Description 🇺🇸</span>
+                              <span className="text-slate-500 font-normal lowercase">(for English view)</span>
+                            </label>
+                            <textarea
+                              value={newProductForm.descriptionEn}
+                              onChange={(e) => setNewProductForm({ ...newProductForm, descriptionEn: e.target.value })}
+                              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none dark:text-white text-sm h-24 transition-colors"
+                              placeholder="Provide detailed specifications, features, warranty details in English..."
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
+                              <span>Bangla Description 🇧🇩</span>
+                              <span className="text-slate-500 font-normal lowercase">(বাংলা রূপান্তরের জন্য)</span>
+                            </label>
+                            <textarea
+                              value={newProductForm.descriptionBn}
+                              onChange={(e) => setNewProductForm({ ...newProductForm, descriptionBn: e.target.value })}
+                              className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none dark:text-white text-sm h-24 transition-colors"
+                              placeholder="পণ্যের বিস্তারিত বিবরণ, ফিচার ও বৈশিষ্ট্য বাংলা ভাষায় লিখুন..."
+                            />
+                          </div>
                         </div>
 
                         <div>
@@ -1697,6 +1825,18 @@ export default function AdminDashboardPage() {
                             value={newProductForm.discount || 0}
                             onChange={(e) => setNewProductForm({ ...newProductForm, discount: Number(e.target.value) })}
                             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none dark:text-white text-sm"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Display Order (Sort Position)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={newProductForm.displayOrder || 0}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, displayOrder: Number(e.target.value) })}
+                            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none dark:text-white text-sm"
+                            placeholder="e.g. 1 (First), 2 (Second)..."
                           />
                         </div>
 
@@ -2967,9 +3107,25 @@ export default function AdminDashboardPage() {
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{viewProductDetails.category}</span>
                     <h4 className="font-extrabold text-base text-slate-900 dark:text-white mt-0.5">{viewProductDetails.name}</h4>
                   </div>
-                  <div>
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Description</span>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mt-1 font-medium">{viewProductDetails.description}</p>
+                  <div className="space-y-3">
+                    {viewProductDetails.descriptionEn && (
+                      <div>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">English Description 🇺🇸</span>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-line bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800">{viewProductDetails.descriptionEn}</p>
+                      </div>
+                    )}
+                    {viewProductDetails.descriptionBn && (
+                      <div>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Bangla Description 🇧🇩</span>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-line bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800">{viewProductDetails.descriptionBn}</p>
+                      </div>
+                    )}
+                    {!viewProductDetails.descriptionEn && !viewProductDetails.descriptionBn && (
+                      <div>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Description</span>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-line bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100 dark:border-slate-800">{viewProductDetails.description}</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-650 dark:text-slate-350">

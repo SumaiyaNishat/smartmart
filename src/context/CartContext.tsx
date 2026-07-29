@@ -7,14 +7,21 @@ import { toast } from "react-hot-toast";
 export interface IProduct {
   _id: string;
   name: string;
+  nameEn?: string;
+  nameBn?: string;
   description: string;
+  descriptionEn?: string;
+  descriptionBn?: string;
   price: number;
   images: string[];
   category: string;
+  categoryEn?: string;
+  categoryBn?: string;
   stock: number;
   discount: number;
   featured: boolean;
   rating: number;
+  displayOrder?: number;
 }
 
 export interface CartItem {
